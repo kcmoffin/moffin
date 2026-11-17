@@ -567,7 +567,7 @@ export default function DashboardPage() {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => {
-                  const isSelf = currentUser && currentUser.id === user.id;
+                  const isSelf = !!currentUser && currentUser.id === user.id;
                   return (
                     <TableRow
                       key={user.id}
