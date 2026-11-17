@@ -82,6 +82,7 @@ export default function DashboardPage() {
   // Delete Confirmation State
   const [deletingUser, setDeletingUser] = useState<UserRecord | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // Show Postman / MySQL guide
   const [showTechGuide, setShowTechGuide] = useState(false);
@@ -194,6 +195,7 @@ export default function DashboardPage() {
   // Confirm Delete User
   const handleDeleteUser = async () => {
     if (!deletingUser) return;
+    setDeleteError("");
     setDeleteLoading(true);
 
     try {
@@ -207,7 +209,7 @@ export default function DashboardPage() {
       await fetchUsers();
       setTimeout(() => setSuccessMessage(""), 4000);
     } catch (err: any) {
-      setError(err.message || "Failed to delete user.");
+      setDeleteError(err.message || "Failed to delete user.");
     } finally {
       setDeleteLoading(false);
     }
@@ -636,7 +638,10 @@ export default function DashboardPage() {
                           <Button
                             variant="ghost"
                             size="icon-xs"
-                            onClick={() => setDeletingUser(user)}
+                            onClick={() => {
+                              setDeleteError("");
+                              setDeletingUser(user);
+                            }}
                             className="hover:bg-rose-100/50 text-rose-500 rounded-xl size-7"
                             title="Delete User"
                             disabled={isSelf}
@@ -840,6 +845,12 @@ export default function DashboardPage() {
                 Remove <strong>"{deletingUser.username}"</strong> (ID: #{deletingUser.id}) from MySQL database?
               </p>
             </div>
+
+            {deleteError && (
+              <div className="p-2.5 text-xs text-rose-700 bg-rose-50 rounded-xl border border-rose-200 text-left">
+                {deleteError}
+              </div>
+            )}
 
             <div className="pt-2 flex justify-center gap-2">
               <Button
