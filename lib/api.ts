@@ -11,7 +11,11 @@ export function getEffectiveApiBaseUrl(): string {
     if (custom && custom.trim() !== "") {
       return custom.trim().replace(/\/+$/, "");
     }
+    // In the browser, use relative URLs so Next.js proxy/rewrites handle routing.
+    // This works for both local dev (port 3000) and Vercel production.
+    return "";
   }
+  // Server-side: use the explicit backend URL (for SSR/RSC if needed)
   return (CONFIG.API_BASE_URL || "http://localhost:5000").replace(/\/+$/, "");
 }
 
@@ -30,7 +34,16 @@ export async function checkBackendHealth(customUrl?: string): Promise<{
   error?: string;
   url: string;
 }> {
-  const base = (customUrl || getEffectiveApiBaseUrl()).replace(/\/+$/, "");
+  // For health check, always use an explicit backend URL
+  const explicitBase = (customUrl ||
+    (typeof window !== "undefined"
+      ? localStorage.getItem(CONFIG.STORAGE_KEYS.CUSTOM_API_URL) || ""
+      : "") ||
+    CONFIG.API_BASE_URL ||
+    "http://localhost:5000"
+  ).replace(/\/+$/, "");
+
+  const base = explicitBase || window.location.origin;
   try {
     const res = await fetch(`${base}/`, {
       method: "GET",
